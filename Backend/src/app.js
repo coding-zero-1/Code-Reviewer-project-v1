@@ -2,6 +2,7 @@ const express = require("express")
 const app = express()
 const aiRoutes = require("./routes/ai.routes")
 const cors = require("cors")
+const userRouter = require("./routes/user")
 
 app.use(express.json())
 app.use(cors())
@@ -12,6 +13,7 @@ app.get("/",(req,res)=>{
     })
 })
 
+app.use('/user',userRouter)
 app.use("/ai",aiRoutes)
 
 module.exports = app;

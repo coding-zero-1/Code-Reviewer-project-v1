@@ -1,55 +1,42 @@
-import { useEffect, useState } from 'react'
 import './App.css'
-import "prismjs/themes/prism-tomorrow.css"
-import prism from "prismjs"
-import Editor from "react-simple-code-editor"
-import 'prismjs/components/prism-javascript'
-import axios from "axios"
-import Markdown from "react-markdown"
+import {BrowserRouter,Routes,Route,Navigate} from 'react-router-dom'
+import Home from './Components/Home/Home'
+import Signin from './Components/Signin/Signin'
+import Signup from './Components/Signup/Signup'
+import { useEffect } from 'react'
 
 function App() {
-  const [code, setCode] = useState('');
-  const [review,setReview] = useState('');
+
+  const isAuthenticated = () => {
+    // Check if the user is authenticated (e.g., check for a token in localStorage)
+    return !!localStorage.getItem('token'); // Returns true if token exists, false otherwise
+  };
+
   useEffect(()=>{
-    prism.highlightAll()
-  })
+    PrivateRoute(<Home/>)
+  },[localStorage.getItem("token")])
 
-  async function reviewCode() {
-    const response = await axios.post("http://localhost:3000/ai/get-review",{
-      prompt:code
-    })
-
-    setReview(response.data)
-  }
+  const PrivateRoute = ({ children }) => {
+    return isAuthenticated() ? children : <Navigate to="/signin" />;
+  };
 
   return (
     <>
-      <div className='main'>
-        <div className="left">
-          <div className="code">
-          <Editor
-              value={code}
-              onValueChange={code => setCode(code)}
-              highlight={code => prism.highlight(code, prism.languages.javascript, "javascript")}
-              padding={10}
-              style={{
-                fontFamily: '"Fira code", "Fira Mono", monospace',
-                fontSize: 16,
-                border: "1px solid #ddd",
-                borderRadius: "5px",
-                height: "100%",
-                width: "100%"
-              }}
-            />
-          </div>
-          <div className="review" onClick={reviewCode}>
-            Review
-          </div>
-        </div>
-        <div className="right">
-          <Markdown>{review}</Markdown>
-        </div>
-      </div>
+       <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route path='/signin' element={<Signin/>}/>
+          <Route path='/signup' element={<Signup/>}/>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+       </BrowserRouter>
     </>
   )
 }
